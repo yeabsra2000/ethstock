@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Dashboard</h1>
+
+    <!-- Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Balance</h5>
+                    <p class="card-text">{{ "%.2f"|format(dashboard.balance) }} Birr</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Portfolio Value</h5>
+                    <p class="card-text">{{ "%.2f"|format(dashboard.portfolio_value) }} Birr</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Value</h5>
+                    <p class="card-text">{{ "%.2f"|format(dashboard.total_value) }} Birr</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="mb-4">
+        <h2>Recent Transactions</h2>
+        {% if dashboard.recent_transactions %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Symbol</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in dashboard.recent_transactions %}
+                <tr>
+                    <td>{{ transaction.type }}</td>
+                    <td>{{ transaction.symbol }}</td>
+                    <td>{{ transaction.quantity }}</td>
+                    <td>{{ transaction.price }} Birr</td>
+                    <td>{{ transaction.timestamp }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No recent transactions.</p>
+        {% endif %}
+    </div>
+
+    <!-- Watchlist -->
+    <div class="mb-4">
+        <h2>Watchlist</h2>
+        {% if dashboard.watchlist %}
+        <ul class="list-group">
+            {% for symbol in dashboard.watchlist %}
+            <li class="list-group-item">
+                {{ symbol }} <button onclick="removeFromWatchlist('{{ symbol }}')">Remove</button>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>Your watchlist is empty.</p>
+        {% endif %}
+    </div>
+
+    <!-- Market Trends -->
+    <div class="mb-4">
+        <h2>Market Trends</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trend in dashboard.market_trends %}
+                <tr>
+                    <td>{{ trend.symbol }}</td>
+                    <td>{{ trend.price }} Birr</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function removeFromWatchlist(symbol) {
+        fetch('/remove_from_watchlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `symbol=${symbol}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}

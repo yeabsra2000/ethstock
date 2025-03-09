@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Welcome to the Stock Market</h1>
+    <p>Start trading today!</p>
+    {% if not session['user'] %}
+        <a href="/login" class="btn">Login</a>
+        <a href="/register" class="btn">Register</a>
+    {% endif %}
+</div>
+{% endblock %}

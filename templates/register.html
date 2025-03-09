@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Register</h2>
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <form action="/register" method="POST" class="form-signin">
+        <div class="form-group">
+            <input type="text" name="username" class="form-control" placeholder="Username" required>
+        </div>
+        <div class="form-group">
+            <input type="password" name="password" class="form-control" placeholder="Password" required pattern=".{6,}" title="Password must be at least 6 characters long">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Register</button>
+    </form>
+    <p>Already have an account? <a href="/login">Login here</a>.</p>
+</div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+        let username = document.querySelector('input[name="username"]').value;
+        let password = document.querySelector('input[name="password"]').value;
+        
+        if (!username || !password) {
+            alert('Please fill out all fields!');
+            event.preventDefault(); // Prevent form submission
+        }
+    });
+</script>
+{% endblock %}

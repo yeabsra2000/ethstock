@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Portfolio Section -->
+    <div class="col-md-6">
+        <h2>Portfolio</h2>
+        <p id="balance">Balance: {{ "%.2f"|format(user.balance) }} Birr</p>
+        <table class="table table-striped" id="portfolio-table">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Total Cost</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="portfolio-body">
+                {% for symbol, data in user.portfolio.items() %}
+                <tr id="stock-{{ symbol }}">
+                    <td>{{ symbol }}</td>
+                    <td>{{ data.name }}</td>
+                    <td>{{ data.quantity }}</td>
+                    <td>{{ "%.2f"|format(data.total_cost) }} Birr</td>
+                    <td>
+                        <button onclick="sellStock('{{ symbol }}')">Sell</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Available Stocks Section -->
+    <div class="col-md-6">
+        <h2>Available Stocks</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="stock-table">
+                {% for stock in stocks %}
+                <tr>
+                    <td>{{ stock.symbol }}</td>
+                    <td>{{ stock.name }}</td>
+                    <td>{{ stock.price }} Birr</td>
+                    <td>
+                        <button onclick="buyStock('{{ stock.symbol }}')">Buy</button>
+                        <button onclick="addToWatchlist('{{ stock.symbol }}')">Watch</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Watchlist Section -->
+<h2>Watchlist</h2>
+<ul id="watchlist" class="list-group">
+    {% for symbol in user.watchlist %}
+    <li class="list-group-item">
+        {{ symbol }} <button onclick="removeFromWatchlist('{{ symbol }}')">Remove</button>
+    </li>
+    {% endfor %}
+</ul>
+
+<script>
+    // Buy stock function
+    function buyStock(symbol) {
+        const quantity = prompt("Enter quantity to buy:");
+        if (!quantity || isNaN(quantity) || quantity <= 0) {
+            alert("Please enter a valid quantity.");
+            return;
+        }
+        fetch('/buy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `symbol=${symbol}&quantity=${quantity}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                alert("Purchase successful!");
+                location.reload(); // Refresh the page to update portfolio
+            }
+        });
+    }
+
+    // Sell stock function
+    function sellStock(symbol) {
+        const quantity = prompt("Enter quantity to sell:");
+        if (!quantity || isNaN(quantity) || quantity <= 0) {
+            alert("Please enter a valid quantity.");
+            return;
+        }
+        fetch('/sell', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `symbol=${symbol}&quantity=${quantity}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                alert("Sale successful!");
+                location.reload(); // Refresh the page to update portfolio
+            }
+        });
+    }
+
+    // Add to watchlist function
+    function addToWatchlist(symbol) {
+        fetch('/add_to_watchlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `symbol=${symbol}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Refresh page to update watchlist
+            } else {
+                alert(data.error);
+            }
+        });
+    }
+
+    // Remove from watchlist function
+    function removeFromWatchlist(symbol) {
+        fetch('/remove_from_watchlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `symbol=${symbol}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Refresh page to update watchlist
+            } else {
+                alert(data.error);
+            }
+        });
+    }
+</script>
+{% endblock %}
